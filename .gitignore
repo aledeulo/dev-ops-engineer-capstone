@@ -1,0 +1,5 @@
+.vscode
+app/.devops
+app/.pytest_cache
+app/.coverage
+app/__pycache__

@@ -1,0 +1,7 @@
+.vscode
+.Dockerfile
+.devops
+../.circleci
+.pytest_cache
+.coverage
+__pycache__
