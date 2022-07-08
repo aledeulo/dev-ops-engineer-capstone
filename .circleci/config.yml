@@ -77,7 +77,8 @@ jobs:
                 echo "Could not create network stack."
                 exit 1
               fi             
-
+            no_output_timeout: 30m
+            
     create-aws-eks:
       <<: *aws_docker_image
       steps:
@@ -96,7 +97,7 @@ jobs:
                 aws eks --region us-east-1 create-cluster --name ${ENV_NAME}-cluster \
                 --role-arn arn:aws:iam::246528985509:role/UdaEKSClusterAccess \
                 --resources-vpc-config subnetIds=${SUBNETS},securityGroupIds=${SG}
-
+            no_output_timeout: 30m
 
 workflows:
   deploy-application:
