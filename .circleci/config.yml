@@ -1,10 +1,28 @@
 version: 2.1
 
+aws_docker_image: &aws_docker_image
+  docker:
+    - image: amazon/aws-cli
+
+python_docker_image: &python_docker_image
+  docker:
+    - image: python:3.7.3-stretch
+
+commands:
+  destroy-environment:
+    description: Destroy vpc and eks cloudformation stacks given a workflow ID.    
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+              aws cloudformation delete-stack --stack-name network-stack-${ENV_NAME}
+              aws cloudformation delete-stack --stack-name eks-stack-${CIRCLE_WORKFLOW_ID:0:7}
+
 jobs:
 
     build-test-lint:
-      docker:
-        - image: python:3.7.3-stretch
+      <<: *python_docker_image
       working_directory: ~/repo
       steps:
         - checkout
@@ -37,9 +55,27 @@ jobs:
             command: |
               cd ./app
               source .devops/bin/activate
-              make lint 
+              make lint
+  
+    deploy-infrastructure-network:
+      <<: *aws_docker_image
+      steps:
+        - checkout
+        - run:
+            name: Deploy network stack
+            command: |
+              aws cloudformation deploy \
+              --template-file .circleci/cf-templates/network.yml \
+              --tags project=udapeople \
+              --stack-name "network-stack-${ENV_NAME}" \
+              --parameter-overrides EnvironmentName="${ENV_NAME}" 
+
 
 workflows:
   build-test-lint:
     jobs:
       - build-test-lint
+      - deploy-infrastructure-network:
+          filters:
+            branches:
+              only: [deploy-network]
