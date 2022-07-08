@@ -4,38 +4,34 @@ jobs:
 
     build-test-lint:
       docker:
-        # Use the same Docker base as the project
         - image: python:3.7.3-stretch
-
       working_directory: ~/repo
-
       steps:
         - checkout
-
-        # Download and cache dependencies
         - restore_cache:
             keys:
               - v1-dependencies-{{ checksum "./app/requirements.txt" }}
               # fallback to using the latest cache if no exact match is found
               - v1-dependencies-
-
         - run:
             name: set up python
             command: |
                 cd ./app
                 make setup
-
         - run:
             name: install dependencies
             command: |
                 cd ./app
                 make install
-
         - save_cache:
             paths:
                 - ./.devops
             key: v1-dependencies-{{ checksum "./app/requirements.txt" }}
-
+        - run:
+            name: run test
+            command: |
+                cd ./app
+                make test
         - run:
             name: run lint
             command: |
