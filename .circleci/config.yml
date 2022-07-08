@@ -23,14 +23,15 @@ jobs:
             name: set up python
             command: |
                 cd ..
-                cd app
+                ls -l
+                cd ./app
                 make setup
 
         - run:
             name: install dependencies
             command: |
                 cd ..
-                cd app
+                cd ./app
                 make install
 
         - save_cache:
@@ -42,7 +43,7 @@ jobs:
             name: run lint
             command: |
               cd ..
-              cd app
+              cd ./app
               source .devops/bin/activate
               make lint 
 
