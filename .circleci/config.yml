@@ -22,6 +22,7 @@ jobs:
         - run:
             name: set up python
             command: |
+                ls -l
                 cd ..
                 ls -l
                 cd ./app
