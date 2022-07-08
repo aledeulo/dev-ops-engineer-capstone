@@ -106,10 +106,10 @@ workflows:
           requires: [build-test-lint]
           filters:
             branches:
-              only: [master]
+              only: [main]
       - create-aws-eks:
           requires: [deploy-infrastructure-network]
           filters:
             branches:
-              only: [master]
+              only: [main]
   
