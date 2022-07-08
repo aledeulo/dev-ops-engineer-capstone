@@ -22,16 +22,12 @@ jobs:
         - run:
             name: set up python
             command: |
-                ls -l
-                cd ..
-                ls -l
                 cd ./app
                 make setup
 
         - run:
             name: install dependencies
             command: |
-                cd ..
                 cd ./app
                 make install
 
@@ -43,7 +39,6 @@ jobs:
         - run:
             name: run lint
             command: |
-              cd ..
               cd ./app
               source .devops/bin/activate
               make lint 
