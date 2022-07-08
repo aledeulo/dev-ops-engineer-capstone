@@ -1,7 +1,7 @@
 setup:
 	# Create python virtualenv & source it
-	python3 -m venv ~/.devops &&\
-	source ~/.devops/bin/activate
+	python3 -m venv .devops &&\
+	. .devops/bin/activate
 
 install:
 	# This should be run from inside a virtualenv
@@ -15,6 +15,7 @@ lint:
 	# Install hadolint
 	wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
 	chmod +x /bin/hadolint
+
 	hadolint Dockerfile
 	pylint --disable=R,C,W1203,W1202 app.py
 
