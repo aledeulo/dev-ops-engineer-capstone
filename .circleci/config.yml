@@ -78,13 +78,13 @@ workflows:
   deploy-application:
     jobs:
       - build-test-lint
-      - deploy-infrastructure-network:
+      - deploy-aws-network:
           requires: [build-test-lint]
           filters:
             branches:
               only: [main]
-      - create-aws-eks:
-          requires: [deploy-infrastructure-network]
+      - deploy-aws-eks:
+          requires: [deploy-aws-network]
           filters:
             branches:
               only: [main]
