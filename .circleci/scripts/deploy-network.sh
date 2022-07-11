@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-ENV_NAME=$1
+export ENV_NAME=$1
 echo "Received $ENV_NAME"
-SUCCESS=$(aws cloudformation deploy --template-file ../cf-templates/network.yml  \
+export SUCCESS=$(aws cloudformation deploy --template-file ../cf-templates/network.yml  \
                 --tags project=udapeople  --stack-name "network-stack-$ENV_NAME"    \
                 --parameter-overrides EnvironmentName="$ENV_NAME" --profile=$2||default)
 
