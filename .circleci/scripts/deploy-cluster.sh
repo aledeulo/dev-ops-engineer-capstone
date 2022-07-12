@@ -19,6 +19,7 @@ eksctl create cluster \
     --name $ENV_NAME-cluster \
     --version 1.19 \
     --region us-east-1 \
+    --fargate
     --nodegroup-name $ENV_NAME-worker \
     --node-type t2.micro \
     --nodes 2 \
@@ -33,3 +34,5 @@ eksctl create cluster \
     --managed \
     --asg-access \
     --verbose 3
+
+aws eks update-kubeconfig --name $ENV_NAME-cluster --region us-east-1

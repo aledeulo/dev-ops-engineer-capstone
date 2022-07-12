@@ -84,7 +84,7 @@ jobs:
             command: |
               cd .circleci/scripts
               chmod +x deploy-cluster.sh
-              ./deploy-cluster.sh $ENV_NAME
+              ./deploy-cluster.sh ${ENV_NAME}
             no_output_timeout: 60m
         - run:
             name: install openSSL
