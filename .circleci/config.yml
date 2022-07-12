@@ -93,7 +93,7 @@ jobs:
                 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
                 mv /tmp/eksctl /usr/local/bin
         - run:
-            name: create eks
+            name: create eks cluster and worker nodes
             command: |
               cd .circleci/scripts
               chmod +x deploy-cluster.sh
@@ -104,13 +104,13 @@ workflows:
   deploy-application:
     jobs:
       # - build-test-lint
-      - deploy-aws-network:
-          # requires: [build-test-lint]
-          filters:
-            branches:
-              only: [main]
+      # - deploy-aws-network:
+      #     requires: [build-test-lint]
+      #     filters:
+      #       branches:
+      #         only: [main]
       - deploy-aws-eks:
-          requires: [deploy-aws-network]
+          # requires: [deploy-aws-network]
           filters:
             branches:
               only: [main]

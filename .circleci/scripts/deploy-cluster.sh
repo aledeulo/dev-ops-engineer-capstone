@@ -14,22 +14,9 @@ else
 fi
 
 #Deploy the cluster if not exist
-
-PUBLIC_SUBNETS=$(aws cloudformation list-exports --query "Exports[?Name==\`$ENV_NAME-PUB-NETS\`].Value" \
-                          --no-paginate --output text)
-
-echo "Received PUBLIC_SUBNETS: $PUBLIC_SUBNETS"
-
-PRIVATE_SUBNETS=$(aws cloudformation list-exports --query "Exports[?Name==\`$ENV_NAME-PRIV-NETS\`].Value" \
-                    --no-paginate --output text)
-
-echo "Received PRIVATE_SUBNETS: $PRIVATE_SUBNETS"
-
 eksctl create cluster \
     --name $ENV_NAME-cluster \
     --version 1.19
-    --vpc-private-subnets=$PRIVATE_SUBNETS \
-    --vpc-public-subnets=$PUBLIC_SUBNETS \
     --region us-east-1 \
     --nodegroup-name $ENV_NAME-worker \
     --node-type t2.micro \
