@@ -33,5 +33,3 @@ eksctl create cluster \
     --managed \
     --asg-access \
     --verbose 3
-
-aws eks update-kubeconfig --name $ENV_NAME-cluster --region us-east-1

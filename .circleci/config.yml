@@ -103,9 +103,14 @@ jobs:
               export ROLE_NAME=UdaEKSWorkerNode
               export ECR_URI=246528985509.dkr.ecr.us-east-1.amazonaws.com/uda-docker-proj
 
+              #Configure the cluster
+              aws eks update-kubeconfig --name ${ENV_NAME}-cluster --region us-east-1
+
               curl -o iam_policy_latest.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
               # Create a policy
+              # export POLICY_EXIST=
               aws iam create-policy --policy-name ALBLoadBalancerController --policy-document file://iam_policy_latest.json
+              aws eks update-kubeconfig --name $ENV_NAME-cluster --region us-east-1
               # Policy attachment to a role
               aws iam attach-role-policy --policy-arn arn:aws:iam::${AWS_ACCOUNT}:policy/ALBLoadBalancerController --role-name $ROLE_NAME
 
