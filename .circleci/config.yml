@@ -82,6 +82,10 @@ jobs:
     deploy-aws-eks:
       <<: *aws_docker_image
       steps:
+        - run:  
+            name: Install tar and gzip
+            command: |
+              yum install -y tar gzip
         - run:
             name: install eksctl
             command: |
