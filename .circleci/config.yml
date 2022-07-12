@@ -82,6 +82,7 @@ jobs:
     deploy-aws-eks:
       <<: *aws_docker_image
       steps:
+        - checkout
         - run:  
             name: Install tar and gzip
             command: |
@@ -94,30 +95,22 @@ jobs:
         - run:
             name: create eks
             command: |
-
-              export VALIDATE=$(aws eks describe-cluster --name $ENV_NAME-cluster --query 'cluster.name')
-              echo "$VALIDATE" > ~/validate
-              if cat ~/validate | grep "$ENV_NAME-cluster"
-              then
-                  echo "Cluster $ENV_NAME-cluster already exist."
-                  exit 0
-              else
-                  echo "Attempting to create the cluster $ENV_NAME-cluster"
-              fi             
-              
+              cd .circleci/scripts
+              chmod +x deploy-cluster.sh
+              ./deploy-cluster.sh $ENV_NAME
             no_output_timeout: 60m
 
 workflows:
   deploy-application:
     jobs:
       # - build-test-lint
-      # - deploy-aws-network:
-      #     requires: [build-test-lint]
-      #     filters:
-      #       branches:
-      #         only: [main]
+      - deploy-aws-network:
+          # requires: [build-test-lint]
+          filters:
+            branches:
+              only: [main]
       - deploy-aws-eks:
-          # requires: [deploy-aws-network]
+          requires: [deploy-aws-network]
           filters:
             branches:
               only: [main]
