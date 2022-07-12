@@ -65,7 +65,7 @@ jobs:
             name: deploy network stack
             command: |
               export SUCCESS=$(aws cloudformation deploy --template-file .circleci/cf-templates/network.yml  \
-                              --tags project=udapeople  --stack-name "network-stack-$ENV_NAME"    \
+                              --tags project=dev-ops-engineer-capstone  --stack-name "network-stack-$ENV_NAME"    \
                               --parameter-overrides EnvironmentName="$ENV_NAME")
 
               echo "$SUCCESS" > ~/result
