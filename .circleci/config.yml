@@ -83,8 +83,13 @@ jobs:
       <<: *aws_docker_image
       steps:
         - run:
-            name: deploy eks cluster
+            name: check eksctl
             command: |
+                eksctl version
+        - run:
+            name: create eks cluster
+            command: |
+
               export VALIDATE=$(aws eks describe-cluster --name $ENV_NAME-cluster --query 'cluster.name')
               echo "$VALIDATE" > ~/validate
               if cat ~/validate | grep "$ENV_NAME-cluster"
@@ -94,37 +99,21 @@ jobs:
               else
                   echo "Attempting to create the cluster $ENV_NAME-cluster"
               fi
-
-              export SG=$(aws cloudformation list-exports --query "Exports[?Name==\`$ENV_NAME-SecurityGroups\`].Value" \
-                          --no-paginate --output text)
-
-              echo "Received SG: $SG"
-
-              export SUBNETS=$(aws cloudformation list-exports --query "Exports[?Name==\`$ENV_NAME-SubnetIds\`].Value" \
-                          --no-paginate --output text)
-
-              echo "Received Subnets: $SUBNETS"
-
-              aws eks create-cluster --name $ENV_NAME-cluster \
-                              --role-arn arn:aws:iam::246528985509:role/UdaEKSClusterAccess \
-                              --resources-vpc-config subnetIds=$SUBNETS,securityGroupIds=$SG \
-                              --region us-east-1 
-
-
-              aws eks wait cluster-active --name $ENV_NAME-cluster
+              
+              
             no_output_timeout: 60m
 
 workflows:
   deploy-application:
     jobs:
-      - build-test-lint
-      - deploy-aws-network:
-          requires: [build-test-lint]
-          filters:
-            branches:
-              only: [main]
+      # - build-test-lint
+      # - deploy-aws-network:
+      #     requires: [build-test-lint]
+      #     filters:
+      #       branches:
+      #         only: [main]
       - deploy-aws-eks:
-          requires: [deploy-aws-network]
+          # requires: [deploy-aws-network]
           filters:
             branches:
               only: [main]
