@@ -99,7 +99,7 @@ jobs:
               echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check &&
               chmod +x kubectl
               mv ./kubectl /usr/local/bin/kubectl
-              kubectl version --short
+              kubectl version --short --client
 
         - run:
             name: create eks cluster and worker nodes
