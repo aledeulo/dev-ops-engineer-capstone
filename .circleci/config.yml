@@ -94,6 +94,9 @@ jobs:
               chmod 700 get_helm.sh
               ./get_helm.sh
         - run:
+            name: install openSSL
+            command: yum install openssl
+        - run:
             name: install load balancer
             command: |           
 
