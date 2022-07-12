@@ -22,7 +22,7 @@ eksctl create cluster \
     --node-type t2.micro \
     --nodes 2 \
     --nodes-min 1 \
-    --node-max 3 \
+    --nodes-max 3 \
     --ssh-access \
     --node-volume-size 10 \
     --ssh-public-key Default_EKS_Access_Key \
