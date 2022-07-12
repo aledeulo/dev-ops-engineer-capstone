@@ -16,7 +16,6 @@ fi
 #Deploy the cluster if not exist
 eksctl create cluster \
     --name $ENV_NAME-cluster \
-    --version 1.19
     --region us-east-1 \
     --nodegroup-name $ENV_NAME-worker \
     --node-type t2.micro \
@@ -24,7 +23,7 @@ eksctl create cluster \
     --nodes-min 1 \
     --node-max 3 \
     --ssh-access \
-    --node-volume-size 8 \
+    --node-volume-size 10 \
     --ssh-public-key Default_EKS_Access_Key \
     --appmesh-access \
     --full-ecr-access \

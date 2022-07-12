@@ -1,0 +1,16 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: basic-cluster
+  region: eu-north-1
+
+nodeGroups:
+  - name: cluster-node-group
+    labels: { role: workers }
+    instanceType: t2.micro
+    privateNetworking: true
+    desiredCapacity: 2
+    volumeSize: 10
+    ssh:
+      publicKeyPath: Default_EKS_Access_Key

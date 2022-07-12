@@ -16,8 +16,7 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-              aws cloudformation delete-stack --stack-name network-stack-${ENV_NAME}
-              aws cloudformation delete-stack --stack-name eks-stack-${CIRCLE_WORKFLOW_ID:0:7}
+              aws cloudformation delete-stack --stack-name eksctl-$ENV_NAME-cluster-cluster-${CIRCLE_WORKFLOW_ID:0:7}
 
 jobs:
 
@@ -92,6 +91,17 @@ jobs:
             command: |
                 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
                 mv /tmp/eksctl /usr/local/bin
+        - run:
+            name: install kubectl
+            command: |
+              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" &&\
+              curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256" &&\
+              echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check &&
+              chmod +x kubectl
+              mkdir -p ~/.local/bin
+              mv ./kubectl ~/.local/bin/kubectl
+              kubectl version --client
+
         - run:
             name: create eks cluster and worker nodes
             command: |
