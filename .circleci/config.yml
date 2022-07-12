@@ -112,7 +112,7 @@ jobs:
 
 
               aws eks wait cluster-active --name $ENV_NAME-cluster
-            no_output_timeout: 30m
+            no_output_timeout: 60m
 
 workflows:
   deploy-application:
