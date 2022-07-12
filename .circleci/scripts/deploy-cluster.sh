@@ -19,7 +19,6 @@ eksctl create cluster \
     --name $ENV_NAME-cluster \
     --version 1.19 \
     --region us-east-1 \
-    --fargate \
     --nodegroup-name $ENV_NAME-worker \
     --node-type t2.micro \
     --nodes 2 \
