@@ -83,11 +83,12 @@ jobs:
       <<: *aws_docker_image
       steps:
         - run:
-            name: check eksctl
+            name: install eksctl
             command: |
-                eksctl version
+                curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+                sudo mv /tmp/eksctl /usr/local/bin
         - run:
-            name: create eks cluster
+            name: create eks
             command: |
 
               export VALIDATE=$(aws eks describe-cluster --name $ENV_NAME-cluster --query 'cluster.name')
@@ -98,8 +99,7 @@ jobs:
                   exit 0
               else
                   echo "Attempting to create the cluster $ENV_NAME-cluster"
-              fi
-              
+              fi             
               
             no_output_timeout: 60m
 
