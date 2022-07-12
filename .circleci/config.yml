@@ -86,16 +86,15 @@ jobs:
               chmod +x deploy-cluster.sh
               ./deploy-cluster.sh $ENV_NAME
             no_output_timeout: 60m
-
+        - run:
+            name: install openSSL
+            command: yum install openssl
         - run:
             name: install helm
             command: |
               curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
               chmod 700 get_helm.sh
-              ./get_helm.sh
-        - run:
-            name: install openSSL
-            command: yum install openssl
+              ./get_helm.sh        
         - run:
             name: install load balancer
             command: |           
