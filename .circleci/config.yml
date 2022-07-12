@@ -56,28 +56,6 @@ jobs:
               source .devops/bin/activate
               make lint
   
-    deploy-aws-network:
-      <<: *aws_docker_image
-      steps:
-        - checkout
-        - run:
-            name: deploy network stack
-            command: |
-              export SUCCESS=$(aws cloudformation deploy --template-file .circleci/cf-templates/network.yml  \
-                              --tags project=dev-ops-engineer-capstone  --stack-name "network-stack-$ENV_NAME"    \
-                              --parameter-overrides EnvironmentName="$ENV_NAME")
-
-              echo "$SUCCESS" > ~/result
-              if grep -E "Successfully created/updated|No changes to deploy" ~/result
-              then
-              echo "Successfully created/updated"
-              exit 0
-              else
-              echo "Could not create network stack."
-              exit 1
-              fi          
-            no_output_timeout: 30m
-
     deploy-aws-eks:
       <<: *aws_docker_image
       steps:
@@ -109,17 +87,46 @@ jobs:
               ./deploy-cluster.sh $ENV_NAME
             no_output_timeout: 60m
 
+        - run:
+            name: install helm
+            command: |
+              curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
+              chmod 700 get_helm.sh
+              ./get_helm.sh
+        - run:
+            name: install load balancer
+            command: |           
+
+              export VPC=$(aws ec2 describe-vpcs --region us-east-1 --filters "Name=tag-value,Values=eksctl-${ENV_NAME}-cluster-cluster/VPC" --query 'Vpcs[*].VpcId' --output text)
+              export ROLE_NAME=UdaEKSWorkerNode
+              export ECR_URI=246528985509.dkr.ecr.us-east-1.amazonaws.com/uda-docker-proj
+
+              curl -o iam_policy_latest.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+              # Create a policy
+              aws iam create-policy --policy-name ALBLoadBalancerController --policy-document file://iam_policy_latest.json
+              # Policy attachment to a role
+              aws iam attach-role-policy --policy-arn arn:aws:iam::${AWS_ACCOUNT}:policy/ALBLoadBalancerController --role-name $ROLE_NAME
+
+              helm repo add eks https://aws.github.io/eks-charts
+              helm repo update
+
+              kubectl apply -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master"
+
+              # To install the Helm chart, run the following command:
+              helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system  \
+                    --set region=us-east-1 --set image.repository=${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/amazon/aws-load-balancer-controller \
+                    --set clusterName=${ENV_NAME}-cluster --set serviceAccount.create=true \
+                    --set serviceAccount.name=aws-load-balancer-controller
+
+
+
+
 workflows:
   deploy-application:
     jobs:
       # - build-test-lint
-      # - deploy-aws-network:
-      #     requires: [build-test-lint]
-      #     filters:
-      #       branches:
-      #         only: [main]
       - deploy-aws-eks:
-          # requires: [deploy-aws-network]
+          # requires: [build-test-lint]
           filters:
             branches:
               only: [main]
