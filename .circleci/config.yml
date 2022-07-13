@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  aws-ecr: circleci/aws-ecr@7.0.0
+
 aws_docker_image: &aws_docker_image
   docker:
     - image: amazon/aws-cli
@@ -7,10 +10,6 @@ aws_docker_image: &aws_docker_image
 python_docker_image: &python_docker_image
   docker:
     - image: python:3.7.3-stretch
-
-circleci_docker_image_for_docker: &circleci_docker_image_for_docker
-  docker:
-    - image: docker:17.05.0-ce-git
 
 commands:
   destroy-environment:
@@ -124,28 +123,28 @@ jobs:
         #       ./deploy-alb.sh ${ENV_NAME} ${AWS_ACCOUNT} $VPC
         - destroy-environment
 
-    build-and-push-docker-image-to-ecr:
-      <<: *python_docker_image
-      working_directory: ~/repo
-      steps:
-        - checkout
-        - setup_remote_docker
-        - run:
-            name: Install dependencies
-            command: |
-              apk add python curl docker
-              curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
-              unzip awscli-bundle.zip
-              ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
-        - run: 
-            name: build and push docker image to ecr
-            command: |
-              export IMAGE_NAME=${ENV_NAME}-capstone-project
-              export VERSION=${CIRCLE_WORKFLOW_ID:0:7}
-              aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
-              docker build -t $IMAGE_NAME .
-              docker tag $IMAGE_NAME:$VERSION ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/$IMAGE_NAME:$VERSION
-              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/$IMAGE_NAME:$VERSION
+    # build-and-push-docker-image-to-ecr:
+    #   <<: *python_docker_image
+    #   working_directory: ~/repo
+    #   steps:
+    #     - checkout
+    #     - setup_remote_docker
+    #     - run:
+    #         name: Install dependencies
+    #         command: |
+    #           apk add python curl docker
+    #           curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+    #           unzip awscli-bundle.zip
+    #           ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+    #     - run: 
+    #         name: build and push docker image to ecr
+    #         command: |
+    #           export IMAGE_NAME=${ENV_NAME}-capstone-project
+    #           export VERSION=${CIRCLE_WORKFLOW_ID:0:7}
+    #           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
+    #           docker build -t $IMAGE_NAME .
+    #           docker tag $IMAGE_NAME:$VERSION ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/$IMAGE_NAME:$VERSION
+    #           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/$IMAGE_NAME:$VERSION
 
 
 
@@ -162,9 +161,17 @@ workflows:
           filters:
             branches:
               only: [deploy-infrastructure]
-      - build-and-push-docker-image-to-ecr:
+      - aws-ecr/build-and-push-image:
           # requires: [build-test-lint]
           filters:
             branches:
               only: [main]
-  
+          account-url: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
+          aws-access-key-id: ${AWS_ACCESS_KEY_ID}
+          aws-secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+          region: ${AWS_DEFAULT_REGION}
+          create-repo: true
+          dockerfile: Dockerfile
+          path: ./app
+          repo: uda-capstone-project
+          tag: ${CIRCLE_WORKFLOW_ID:0:7}
