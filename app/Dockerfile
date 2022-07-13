@@ -14,7 +14,7 @@ RUN pip install --upgrade --no-cache-dir pip &&\
 COPY . app.py /app/
 
 ## Step 4:
-EXPOSE 5000
+EXPOSE 80
 
 ## Step 5:
 CMD ["python", "app.py"]

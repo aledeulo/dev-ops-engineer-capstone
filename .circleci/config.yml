@@ -147,11 +147,12 @@ jobs:
               # Assuming the Kubernetes cluster is ready
               kubectl get nodes
               # Deploy an App from the Dockerhub to the Kubernetes Cluster
-              kubectl create deploy uda-capstone-project --image=${ECR_URI}/uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7}
+              kubectl run uda-capstone-project --image=${ECR_URI}/uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7} \
+                 --port=80 --labels app=uda-capstone-project
               # See the status
               kubectl get deploy,rs,svc,pods
               # Port forward 
-              kubectl port-forward pod/uda-capstone-project-84857d9565-2598m --address 0.0.0.0 5000:5000
+              kubectl port-forward uda-capstone-project --address 0.0.0.0 8000:80
 workflows:
   deploy-application:
     jobs:
