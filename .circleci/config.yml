@@ -123,6 +123,34 @@ jobs:
         #       ./deploy-alb.sh ${ENV_NAME} ${AWS_ACCOUNT} $VPC
         - destroy-environment
 
+    deploy-service-in-eks:
+      <<: *aws_docker_image
+      steps:
+        - checkout
+        - run:  
+            name: Install tar and gzip
+            command: |
+              yum install -y tar gzip
+        - run:
+            name: install kubectl
+            command: |
+              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" &&\
+              curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256" &&\
+              echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check &&
+              chmod +x kubectl
+              mv ./kubectl /usr/local/bin/kubectl
+              kubectl version --short --client
+        - run:
+            name: deploy pods
+            command: |
+              # Assuming the Kubernetes cluster is ready
+              kubectl get nodes
+              # Deploy an App from the Dockerhub to the Kubernetes Cluster
+              kubectl create deploy uda-capstone-project --image=${ECR_URI}/uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7}
+              # See the status
+              kubectl get deploy,rs,svc,pods
+              # Port forward 
+              kubectl port-forward pod/uda-capstone-project-84857d9565-2598m --address 0.0.0.0 5000:5000
 workflows:
   deploy-application:
     jobs:
@@ -148,3 +176,8 @@ workflows:
           path: ./app
           repo: uda-capstone-project
           tag: ${CIRCLE_WORKFLOW_ID:0:7}
+      - deploy-service-in-eks:
+          requires: [aws-ecr/build-and-push-image]
+          filters:
+            branches:
+              only: [main]
