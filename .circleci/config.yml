@@ -133,14 +133,13 @@ jobs:
         - run:
             name: Install dependencies
             command: |
-              apk add --no-cache \
-                py-pip=9.0.0-r1
-              pip install \
-                awscli==1.11.76
+              apk add --no-cache py-pip=9.0.0-r1
+              pip install awscli==1.11.76
         - run: 
             name: build and push docker image to ecr
             command: |
               cd ./app
+              ls -l
               chmod +x deploy-to-ecr.sh
               ./deploy-to-ecr.sh ${ENV_NAME}-capstone-project ${AWS_ACCOUNT} ${CIRCLE_WORKFLOW_ID:0:7}
 
