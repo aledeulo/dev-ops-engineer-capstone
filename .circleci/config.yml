@@ -8,6 +8,10 @@ python_docker_image: &python_docker_image
   docker:
     - image: python:3.7.3-stretch
 
+circleci_docker_image_for_docker: &circleci_docker_image_for_docker
+  docker:
+    - image: docker:17.05.0-ce-git
+
 commands:
   destroy-environment:
     description: Destroy vpc and eks cloudformation stacks given a workflow ID.    
@@ -121,11 +125,18 @@ jobs:
         - destroy-environment
 
     build-and-push-docker-image-to-ecr:
-      <<: *aws_docker_image
+      <<: *circleci_docker_image_for_docker
       working_directory: ~/repo
       steps:
         - checkout
         - setup_remote_docker
+        - run:
+            name: Install dependencies
+            command: |
+              apk add python curl
+              curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+              unzip awscli-bundle.zip
+              ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
         - run: 
             name: build and push docker image to ecr
             command: |
@@ -140,16 +151,16 @@ jobs:
 workflows:
   deploy-application:
     jobs:
-      - build-test-lint:
-          filters:
-            branches:
-              only: [main]
+      # - build-test-lint:
+      #     filters:
+      #       branches:
+      #         only: [main]
       - deploy-aws-eks:
           filters:
             branches:
               only: [deploy-infrastructure]
       - build-and-push-docker-image-to-ecr:
-          requires: [build-test-lint]
+          # requires: [build-test-lint]
           filters:
             branches:
               only: [main]
