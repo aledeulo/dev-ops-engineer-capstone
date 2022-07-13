@@ -4,7 +4,6 @@ ENV_NAME=$1
 
 #Verify if the cluster already exist cluster
 VALIDATE=$(aws eks describe-cluster --name $ENV_NAME-cluster --query 'cluster.name')
-echo "$VALIDATE"
 echo "$VALIDATE" > ~/validate
 if cat ~/validate | grep "$ENV_NAME-cluster"
 then
