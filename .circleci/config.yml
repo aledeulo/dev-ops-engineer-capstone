@@ -125,7 +125,7 @@ jobs:
         - destroy-environment
 
     build-and-push-docker-image-to-ecr:
-      <<: *circleci_docker_image_for_docker
+      <<: *python_docker_image
       working_directory: ~/repo
       steps:
         - checkout
@@ -133,7 +133,7 @@ jobs:
         - run:
             name: Install dependencies
             command: |
-              apk add python curl
+              apk add python curl docker
               curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
               unzip awscli-bundle.zip
               ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
