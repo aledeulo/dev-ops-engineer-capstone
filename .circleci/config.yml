@@ -143,6 +143,7 @@ jobs:
         - run:
             name: deploy pods
             command: |
+              aws eks update-kubeconfig --name $ENV_NAME-cluster --region us-east-1
               # Assuming the Kubernetes cluster is ready
               kubectl get nodes
               # Deploy an App from the Dockerhub to the Kubernetes Cluster
