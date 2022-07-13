@@ -107,7 +107,7 @@ jobs:
             command: |           
               cd .circleci/scripts
               chmod +x create-alb-policy.sh
-              ./create-alb-policy.sh ${ENV_NAME} UdaEKSWorkerNode ${AWS_ACCOUNT}
+              ./create-alb-policy.sh ${ENV_NAME} AmazonEKSLoadBalancerControllerRole ${AWS_ACCOUNT}
         - run:
             name: setup ALB
             command: |
