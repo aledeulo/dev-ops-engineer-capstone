@@ -101,17 +101,7 @@ jobs:
               ./get_helm.sh
         - run: 
             name: create IAM OIDC
-            command: |
-                export OIDC=$(aws eks describe-cluster --name ${ENV_NAME}-cluster --query "cluster.identity.oidc.issuer" --output text)
-                echo "$OIDC" > ~/validate
-                if cat ~/validate | grep "oidc.eks"
-                then
-                    echo "OIDC already exist for cluster ${ENV_NAME}-cluster."
-                    exit 0
-                else
-                    echo "Attempting to create OIDC for cluster ${ENV_NAME}-cluster"
-                    eksctl utils associate-iam-oidc-provider --cluster ${ENV_NAME}-cluster --approve
-                fi
+            command: eksctl utils associate-iam-oidc-provider --region us-east-1 --cluster ${ENV_NAME}-cluster --approve
         - run:
             name: create load balancer policy
             command: |           
@@ -133,7 +123,10 @@ jobs:
 workflows:
   deploy-application:
     jobs:
-      # - build-test-lint
+      - build-test-lint
+          filters:
+            branches:
+              only: [main]
       - deploy-aws-eks:
           # requires: [build-test-lint]
           filters:
