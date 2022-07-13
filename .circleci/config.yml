@@ -123,7 +123,7 @@ jobs:
 workflows:
   deploy-application:
     jobs:
-      - build-test-lint
+      - build-test-lint:
           filters:
             branches:
               only: [main]
