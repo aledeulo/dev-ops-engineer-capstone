@@ -153,8 +153,15 @@ jobs:
               kubectl get deploy,rs,svc,pods
               # Wait until pod is ready
               sleep 10m
+              kubectl get pods
               # Port forward 
               kubectl port-forward uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7} --address 0.0.0.0 8000:80
+              echo ${CIRCLE_WORKFLOW_ID:0:7} >> OldDeploymentId.txt
+            no_output_timeout: 30m
+        - persist_to_workspace:
+            root: ~/
+            paths:
+              - project/OldDeploymentId.txt
 workflows:
   deploy-application:
     jobs:
