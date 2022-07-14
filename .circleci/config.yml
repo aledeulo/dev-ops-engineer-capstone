@@ -98,15 +98,19 @@ jobs:
               echo "$VALIDATE" > ~/validate
               if cat ~/validate | grep "${ENV_NAME}-cluster"
               then
-                  circleci-agent step halt
+                  echo "Cluster ${ENV_NAME}-cluster already exist. Skipping job"
               else
-                  echo "Attempting to create the cluster ${ENV_NAME}-cluster"
+                  echo "Attempting to create the cluster $ENV_NAME-cluster"
               fi
 
               cd .circleci/scripts
               chmod +x deploy-cluster.sh
               ./deploy-cluster.sh ${ENV_NAME}
             no_output_timeout: 60m
+        - run:
+            name: exit job. cluster exist
+            command: circleci-agent step halt
+            when: on_fail
         - run:
             name: install openSSL
             command: yum install -y openssl
