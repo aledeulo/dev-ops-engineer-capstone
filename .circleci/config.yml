@@ -144,37 +144,47 @@ jobs:
             name: deploy pods
             command: |
               aws eks update-kubeconfig --name $ENV_NAME-cluster --region us-east-1
+              
               # Assuming the Kubernetes cluster is ready
               kubectl get nodes
+
               # Deploy an App from the Dockerhub to the Kubernetes Cluster
-              kubectl run uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7} --image=${ECR_URI}/uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7} \
-                 --port=80 --labels app=uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7}
+              kubectl create deploy uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7} --image=${ECR_URI}/uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7}
+
+              #  kubectl create uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7} --image=${ECR_URI}/uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7} \
+              #  --port=80 --labels app=uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7}
+
               # See the status
               kubectl get deploy,rs,svc,pods
+
               # Wait until pod is ready
-              sleep 10m
+              sleep 15m
+
+              # See pods status
               kubectl get pods
+
               # Port forward 
               kubectl port-forward uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7} --address 0.0.0.0 8000:80
               echo ${CIRCLE_WORKFLOW_ID:0:7} >> OldDeploymentId.txt
-            no_output_timeout: 30m
+            no_output_timeout: 60m
         - persist_to_workspace:
             root: ~/
             paths:
               - project/OldDeploymentId.txt
+      
 workflows:
   deploy-application:
     jobs:
-      # - build-test-lint:
-      #     filters:
-      #       branches:
-      #         only: [main]
+      - build-test-lint:
+          filters:
+            branches:
+              only: [main]
       - deploy-aws-eks:
           filters:
             branches:
-              only: [deploy-infrastructure]
+              only: [main, deploy-infrastructure]
       - aws-ecr/build-and-push-image:
-          # requires: [build-test-lint]
+          requires: [deploy-aws-eks]
           filters:
             branches:
               only: [main]
