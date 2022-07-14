@@ -1,18 +1,6 @@
 #!/usr/bin/env bash
 
 ENV_NAME=$1
-
-#Verify if the cluster already exist cluster
-VALIDATE=$(aws eks describe-cluster --name $ENV_NAME-cluster --query 'cluster.name')
-echo "$VALIDATE" > ~/validate
-if cat ~/validate | grep "$ENV_NAME-cluster"
-then
-    echo "Cluster $ENV_NAME-cluster already exist. Skipping job"
-    circleci-agent step halt
-else
-    echo "Attempting to create the cluster $ENV_NAME-cluster"
-fi
-
 #Deploy the cluster if not exist
 eksctl create cluster \
     --name $ENV_NAME-cluster \
