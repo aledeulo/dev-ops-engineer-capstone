@@ -144,12 +144,14 @@ jobs:
             name: deploy pods
             command: |
               aws eks update-kubeconfig --name $ENV_NAME-cluster --region us-east-1
+
+              export POD_TO_DEPLOY=uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7}
               
               # Assuming the Kubernetes cluster is ready
               kubectl get nodes
 
               # Deploy an App from the Dockerhub to the Kubernetes Cluster
-              kubectl create deploy uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7} --image=${ECR_URI}/uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7}
+              kubectl create deploy $POD_TO_DEPLOY --image=${ECR_URI}/uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7}
 
               #  kubectl create uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7} --image=${ECR_URI}/uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7} \
               #  --port=80 --labels app=uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7}
@@ -163,8 +165,10 @@ jobs:
               # See pods status
               kubectl get pods
 
-              # Port forward 
-              kubectl port-forward uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7} --address 0.0.0.0 8000:80
+              # Port forward
+              export POD_NAME=$(kubectl get pods -o=name | grep $POD_TO_DEPLOY)
+              echo 'Pod name found: $POD_NAME'
+              kubectl port-forward $POD_NAME --address 0.0.0.0 8000:80
               echo ${CIRCLE_WORKFLOW_ID:0:7} >> OldDeploymentId.txt
             no_output_timeout: 60m
         - persist_to_workspace:
