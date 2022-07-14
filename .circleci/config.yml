@@ -27,19 +27,7 @@ commands:
               # Detach and delete policy
               aws iam detach-role-policy --policy-arn arn:aws:iam::246528985509:policy/AWSLoadBalancerControllerIAMPolicy --role-name AmazonEKSLoadBalancerControllerRole
               aws iam delete-policy --policy-arn arn:aws:iam::246528985509:policy/AWSLoadBalancerControllerIAMPolicy
-              aws iam delete-role --role-name AmazonEKSLoadBalancerControllerRole 
-  install-eksctl-onfail:
-    description: Install eksctl
-    steps:
-      - run:
-          name: install eksctl
-          command: |
-              - run:
-            name: install eksctl
-            when: on_fail
-            command: |
-                curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-                mv /tmp/eksctl /usr/local/bin      
+              aws iam delete-role --role-name AmazonEKSLoadBalancerControllerRole    
 
 jobs:
 
