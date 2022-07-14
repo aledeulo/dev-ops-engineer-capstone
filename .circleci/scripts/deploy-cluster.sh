@@ -7,8 +7,8 @@ VALIDATE=$(aws eks describe-cluster --name $ENV_NAME-cluster --query 'cluster.na
 echo "$VALIDATE" > ~/validate
 if cat ~/validate | grep "$ENV_NAME-cluster"
 then
-    echo "Cluster $ENV_NAME-cluster already exist."
-    exit 0
+    echo "Cluster $ENV_NAME-cluster already exist. Skipping job"
+    circleci-agent step halt
 else
     echo "Attempting to create the cluster $ENV_NAME-cluster"
 fi
