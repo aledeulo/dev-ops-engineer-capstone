@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uda-capstone-project
+  namespace: ${ENV_NAME}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: uda-capstone-project
+  template:
+    metadata:
+      labels:
+        app: uda-capstone-project
+    spec:
+      containers:
+        - name: uda-capstone-project
+          image: ${ECR_URI}/uda-capstone-project:latest
+          ports:
+            - name: tcp
+              containerPort: 80

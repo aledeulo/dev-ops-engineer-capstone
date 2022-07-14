@@ -95,32 +95,42 @@ jobs:
               chmod +x deploy-cluster.sh
               ./deploy-cluster.sh ${ENV_NAME}
             no_output_timeout: 60m
-        # - run:
-        #     name: install openSSL
-        #     command: yum install -y openssl
-        # - run:
-        #     name: install helm
-        #     command: |
-        #       curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
-        #       chmod 700 get_helm.sh
-        #       ./get_helm.sh
-        # - run: 
-        #     name: create IAM OIDC
-        #     command: eksctl utils associate-iam-oidc-provider --region us-east-1 --cluster ${ENV_NAME}-cluster --approve
-        # - run:
-        #     name: create load balancer policy
-        #     command: |           
-        #       cd .circleci/scripts
-        #       chmod +x create-alb-policy.sh
-        #       ./create-alb-policy.sh ${ENV_NAME} AmazonEKSLoadBalancerControllerRole ${AWS_ACCOUNT}
-        # - run:
-        #     name: setup ALB
-        #     command: |
-        #       cd .circleci/scripts
-        #       chmod +x deploy-alb.sh
-        #       export VPC=$(aws ec2 describe-vpcs --region us-east-1 --filters "Name=tag-value,Values=eksctl-${ENV_NAME}-cluster-cluster/VPC" --query 'Vpcs[*].VpcId' --output text)
+        - run:
+            name: install openSSL
+            command: yum install -y openssl
+        - run:
+            name: install helm
+            command: |
+              curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
+              chmod 700 get_helm.sh
+              ./get_helm.sh
+        - run: 
+            name: create IAM OIDC
+            command: eksctl utils associate-iam-oidc-provider --region us-east-1 --cluster ${ENV_NAME}-cluster --approve
+        - run:
+            name: create load balancer policy
+            command: |           
+              cd .circleci/scripts
+              chmod +x create-alb-policy.sh
+              ./create-alb-policy.sh ${ENV_NAME} AmazonEKSLoadBalancerControllerRole ${AWS_ACCOUNT}
+        - run:
+            name: setup ALB
+            command: |
+              cd .circleci/scripts
+              chmod +x deploy-alb.sh
+              export VPC=$(aws ec2 describe-vpcs --region us-east-1 --filters "Name=tag-value,Values=eksctl-${ENV_NAME}-cluster-cluster/VPC" --query 'Vpcs[*].VpcId' --output text)
               
-        #       ./deploy-alb.sh ${ENV_NAME} ${AWS_ACCOUNT} $VPC
+              ./deploy-alb.sh ${ENV_NAME} ${AWS_ACCOUNT} $VPC
+
+        - run:
+            name: create fargarte profile
+            command: |
+              eksctl create fargateprofile \
+                    --cluster ${ENV_NAME}-cluster \
+                    --region ${AWS_DEFAULT_REGION} \
+                    --name uda-capstone-project \
+                    --namespace ${ENV_NAME}
+
         - destroy-environment
 
     deploy-service-in-eks:
@@ -136,38 +146,50 @@ jobs:
             command: |
               curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" &&\
               curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256" &&\
-              echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check &&
+              echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check &&\
               chmod +x kubectl
               mv ./kubectl /usr/local/bin/kubectl
               kubectl version --short --client
         - run:
             name: deploy pods
             command: |
-              aws eks update-kubeconfig --name $ENV_NAME-cluster --region us-east-1
+              aws eks update-kubeconfig --name ${ENV_NAME}-cluster --region us-east-1
 
-              export POD_TO_DEPLOY=uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7}
-              
-              # Assuming the Kubernetes cluster is ready
-              kubectl get nodes
+              cd .circleci/files
 
-              # Deploy an App from the Dockerhub to the Kubernetes Cluster
-              kubectl create deploy $POD_TO_DEPLOY --image=${ECR_URI}/uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7}
-
-              #  kubectl create uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7} --image=${ECR_URI}/uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7} \
-              #  --port=80 --labels app=uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7}
-
-              # See the status
-              kubectl get deploy,rs,svc,pods
+              # Create deployment
+              kubectl apply -f deployment.yaml
+              kubectl get deployments
 
               # Wait until pod is ready
-              sleep 15m
+              sleep 5m
+              
+              # Deploy service
+              kubectl apply -f service.yaml
 
-              # See pods status
-              kubectl get pods
+              # Verify service
+              kubectl get svc uda-capstone-project -n ${ENV_NAME}
 
-              # Port forward
-              export POD_NAME=$(kubectl get pods -o=name | grep $POD_TO_DEPLOY)
-              echo 'Pod name found: $POD_NAME'
+              # export POD_TO_DEPLOY=uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7}
+              
+              # # Assuming the Kubernetes cluster is ready
+              # kubectl get nodes
+
+              # # Deploy an App from the Dockerhub to the Kubernetes Cluster
+              # kubectl create deployment $POD_TO_DEPLOY --image=${ECR_URI}/uda-capstone-project:latest
+
+              # # See the status
+              # kubectl get deployments
+
+              # # Wait until pod is ready
+              # sleep 15m
+
+              # # See pods status
+              # kubectl get pods
+
+              # # Port forward
+              # export POD_NAME=$(kubectl get pods -o=name | grep $POD_TO_DEPLOY)
+              # echo 'Pod name found: ' $POD_NAME
               kubectl port-forward $POD_NAME --address 0.0.0.0 8000:80
               echo ${CIRCLE_WORKFLOW_ID:0:7} >> OldDeploymentId.txt
             no_output_timeout: 60m
@@ -200,7 +222,7 @@ workflows:
           dockerfile: Dockerfile
           path: ./app
           repo: uda-capstone-project
-          tag: ${CIRCLE_WORKFLOW_ID:0:7}
+          tag: latest
       - deploy-service-in-eks:
           requires: [aws-ecr/build-and-push-image]
           filters:
