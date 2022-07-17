@@ -24,7 +24,7 @@ commands:
               aws cloudformation wait stack-delete-complete --stack-name eksctl-${ENV_NAME}-nodegroup-${ENV_NAME}-worker
 
               # Delete fargate profile associated with cluster
-              eksctl delete fargateprofile --cluster ${ENV_NAME}-cluster --name uda-capstone-project
+              # eksctl delete fargateprofile --cluster ${ENV_NAME}-cluster --name uda-capstone-project
               
               aws cloudformation delete-stack --stack-name eksctl-${ENV_NAME}-cluster-cluster              
               # Detach and delete policy
