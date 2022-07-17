@@ -188,7 +188,6 @@ jobs:
               
               # Deploy service
               envsubst < service.yml | kubectl apply -f -
-              # kubectl apply -f service.yml
 
               # Verify service
               kubectl get svc uda-capstone-project -n ${ENV_NAME}
