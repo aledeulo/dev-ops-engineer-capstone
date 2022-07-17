@@ -5,7 +5,8 @@ ENV_NAME=$1
 eksctl create cluster \
     --name $ENV_NAME-cluster \
     --version 1.19 \
-    --region us-east-1 \  
+    --region us-east-1 \
+    --nodegroup-name $ENV_NAME-worker \
     --node-type t3.medium \
     --nodes 2 \
     --nodes-min 1 \
@@ -18,4 +19,4 @@ eksctl create cluster \
     --alb-ingress-access \
     --managed \
     --asg-access \
-    --verbose 3 \
+    --verbose 3
