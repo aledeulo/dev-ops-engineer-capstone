@@ -173,6 +173,9 @@ jobs:
             name: deploy pods
             command: |
               aws eks update-kubeconfig --name ${ENV_NAME}-cluster --region us-east-1
+              
+              # Create fargate profile namespace
+              kubectl create namespace ${ENV_NAME}
 
               cd .circleci/files
 
