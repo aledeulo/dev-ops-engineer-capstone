@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: uda-capstone-project
-  namespace: ${ENV_NAME}
+  namespace: $ENV
 spec:
   replicas: 2
   selector:
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: uda-capstone-project
-          image: ${ECR_URI}/uda-capstone-project:latest
+          image: $ECR/uda-capstone-project:latest
           ports:
             - name: tcp
               containerPort: 80

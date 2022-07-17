@@ -18,11 +18,14 @@ commands:
       - run:
           name: Destroy environment
           when: on_fail
-          command: |
-              eksctl delete fargateprofile --cluster ${ENV_NAME}-cluster --name uda-capstone-project
+          command: |              
               aws cloudformation delete-stack --stack-name eksctl-${ENV_NAME}-cluster-fargate
               aws cloudformation delete-stack --stack-name eksctl-${ENV_NAME}-cluster-addon-iamserviceaccount-kube-system-aws-load-balancer-controller 
               aws cloudformation wait stack-delete-complete --stack-name eksctl-${ENV_NAME}-nodegroup-${ENV_NAME}-worker
+
+              # Delete fargate profile associated with cluster
+              eksctl delete fargateprofile --cluster ${ENV_NAME}-cluster --name uda-capstone-project
+              
               aws cloudformation delete-stack --stack-name eksctl-${ENV_NAME}-cluster-cluster              
               # Detach and delete policy
               aws iam detach-role-policy --policy-arn arn:aws:iam::246528985509:policy/AWSLoadBalancerControllerIAMPolicy --role-name AmazonEKSLoadBalancerControllerRole
@@ -164,21 +167,28 @@ jobs:
               mv ./kubectl /usr/local/bin/kubectl
               kubectl version --short --client
         - run:
+            name: Install envsubst
+            command: yum -y install gettext
+        - run:
             name: deploy pods
             command: |
               aws eks update-kubeconfig --name ${ENV_NAME}-cluster --region us-east-1
 
               cd .circleci/files
 
+              export ENV=${ENV_NAME}
+              export ECR=${ECR_URI}
+
               # Create deployment
-              kubectl apply -f deployment.yml
+              envsubst < deployment.yaml | kubectl apply -f -
               kubectl get deployments
 
               # Wait until pod is ready
               sleep 5m
               
               # Deploy service
-              kubectl apply -f service.yml
+              envsubst < service.yaml | kubectl apply -f -
+              # kubectl apply -f service.yml
 
               # Verify service
               kubectl get svc uda-capstone-project -n ${ENV_NAME}
