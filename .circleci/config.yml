@@ -180,14 +180,14 @@ jobs:
               export ECR=${ECR_URI}
 
               # Create deployment
-              envsubst < deployment.yaml | kubectl apply -f -
+              envsubst < deployment.yml | kubectl apply -f -
               kubectl get deployments
 
               # Wait until pod is ready
               sleep 5m
               
               # Deploy service
-              envsubst < service.yaml | kubectl apply -f -
+              envsubst < service.yml | kubectl apply -f -
               # kubectl apply -f service.yml
 
               # Verify service
