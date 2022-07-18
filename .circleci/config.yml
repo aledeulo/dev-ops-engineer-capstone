@@ -101,18 +101,51 @@ jobs:
             command: |
                 cat .circleci/files/deployment.yml.template |\
                 sed "s|IMAGE_TAG|${CIRCLE_WORKFLOW_ID:0:7}|\
-                g;s|ENV_NAME|${ENV_NAME}|g;s|ECR_URI|${ECR_URI}|g" > .circleci/files/deployment.yml
+                g;s|ENV_NAME|${ENV_NAME}|g;s|ECR_URI|${ECR_URI}|\
+                g;s|VERSION_INFO_VALUE|${CIRCLE_WORKFLOW_ID:0:7}|g" > .circleci/files/deployment.yml
+
+                cat .circleci/files/service.yml.template |\
+                sed "s|ENV_NAME|${ENV_NAME}|g" > .circleci/files/service.yml
         - aws-eks/update-kubeconfig-with-authenticator:
             cluster-name: ${ENV_NAME}-cluster
             install-kubectl: true
+            aws-region: ${AWS_DEFAULT_REGION}
         - kubernetes/create-or-update-resource:
             get-rollout-status: true
-            resource-file-path: .circleci/files/deployment.yml
+            resource-file-path: ".circleci/files/deployment.yml"
             resource-name: deployment/uda-capstone-project
             show-kubectl-command: true
+        - kubernetes/create-or-update-resource:
+            resource-file-path: ".circleci/files/service.yml"
         - run:
             name: check-deployment status before delete old deployment
             command:  kubectl get svc uda-capstone-project
+
+    test-deployment:
+      <<: *python_cluster_docker_image
+      steps:
+        - aws-eks/update-kubeconfig-with-authenticator:
+            cluster-name: ${ENV_NAME}-cluster
+            install-kubectl: true
+            aws-region: ${AWS_DEFAULT_REGION}
+        - run:
+            name: Wait for service to be ready
+            command: |
+              kubectl get pods
+              kubectl get services
+              sleep 30
+              for attempt in {1..20}; do
+                EXTERNAL_IP=$(kubectl get service uda-capstone-project | awk '{print $4}' | tail -n1)
+                echo "Checking external IP: ${EXTERNAL_IP}"
+                if [ -n "${EXTERNAL_IP}" ] && [ -z $(echo "${EXTERNAL_IP}" | grep "pending") ]; then
+                  break
+                fi
+                echo "Waiting for external IP to be ready: ${EXTERNAL_IP}"
+                sleep 10
+              done
+              sleep 180
+              echo "External IP: ${EXTERNAL_IP}"
+              curl -s --retry 10 "http://$EXTERNAL_IP" | grep "${CIRCLE_WORKFLOW_ID:0:7}"
 
 workflows:
   deploy-application:
@@ -144,16 +177,21 @@ workflows:
           filters:
             branches:
               only: [main]
-      - aws-eks/update-container-image:
+      # - aws-eks/update-container-image:
+      #     requires: [prepare-eks-deployment]
+      #     filters:
+      #       branches:
+      #         only: [main]
+      #     cluster-name: ${ENV_NAME}-cluster
+      #     container-image-updates: 'uda-capstone-project=uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7}'
+      #     post-steps:
+      #       - kubernetes/delete-resource:
+      #           resource-names: uda-capstone-project
+      #           resource-types: deployment
+      #           wait: true
+      #     resource-name: deployment/uda-capstone-project
+      - test-deployment:
           requires: [prepare-eks-deployment]
           filters:
             branches:
               only: [main]
-          cluster-name: ${ENV_NAME}-cluster
-          container-image-updates: 'uda-capstone-project=uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7}'
-          post-steps:
-            - kubernetes/delete-resource:
-                resource-names: uda-capstone-project
-                resource-types: deployment
-                wait: true
-          resource-name: deployment/uda-capstone-project
