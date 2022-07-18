@@ -112,13 +112,12 @@ jobs:
 
               export ENV=${ENV_NAME}
               export ECR=${ECR_URI}
-              
+
               # Update template
               envsubst < deployment.yml
         - kubernetes/create-or-update-resource:
             resource-file-path: .circleci/files/deployment.yaml
             show-kubectl-command: true
-            no_output_timeout: 60m
 workflows:
   deploy-application:
     jobs:
