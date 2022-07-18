@@ -92,7 +92,7 @@ jobs:
             ssh-access: true
             ssh-public-key: DEFAULT_EKS_US_EAST_2_Key
 
-    prepare-eks-deployment:
+    deploy-app-in-eks:
       <<: *python_cluster_docker_image
       steps:
         - checkout
@@ -115,10 +115,12 @@ jobs:
             resource-file-path: ".circleci/files/deployment.yml"
             resource-name: deployment/uda-capstone-project
             show-kubectl-command: true
+            no-output-timeout: 60m
         - kubernetes/create-or-update-resource:
             resource-file-path: ".circleci/files/service.yml"
+            no-output-timeout: 60m
         - run:
-            name: check-deployment status before delete old deployment
+            name: get deployment status
             command:  kubectl get svc uda-capstone-project
 
     test-deployment:
@@ -172,26 +174,13 @@ workflows:
           path: ./app
           repo: uda-capstone-project
           tag: ${CIRCLE_WORKFLOW_ID:0:7}
-      - prepare-eks-deployment:
+      - deploy-app-in-eks:
           requires: [aws-ecr/build-and-push-image, deploy-aws-eks]
           filters:
             branches:
               only: [main]
-      # - aws-eks/update-container-image:
-      #     requires: [prepare-eks-deployment]
-      #     filters:
-      #       branches:
-      #         only: [main]
-      #     cluster-name: ${ENV_NAME}-cluster
-      #     container-image-updates: 'uda-capstone-project=uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7}'
-      #     post-steps:
-      #       - kubernetes/delete-resource:
-      #           resource-names: uda-capstone-project
-      #           resource-types: deployment
-      #           wait: true
-      #     resource-name: deployment/uda-capstone-project
       - test-deployment:
-          requires: [prepare-eks-deployment]
+          requires: [deploy-app-in-eks]
           filters:
             branches:
               only: [main]
