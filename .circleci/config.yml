@@ -73,10 +73,9 @@ jobs:
         - checkout
         - install_aws_cli
         - run:
-            name: create eks cluster and worker nodes
+            name: check if the cluster exist
             command: |
 
-              #Verify if the cluster already exist cluster
               export VALIDATE=$(aws eks describe-cluster --name ${ENV_NAME}-cluster --query 'cluster.name')
               echo "$VALIDATE" > ~/validate
               if cat ~/validate | grep "${ENV_NAME}-cluster"
@@ -90,6 +89,7 @@ jobs:
         - aws-eks/create-cluster:
             cluster-name: ${ENV_NAME}-cluster 
             aws-region: ${AWS_DEFAULT_REGION}
+            nodegroup-name: ${ENV_NAME}-workers
             node-type: t2.micro
             nodes-min: 2
             nodes-max: 3
@@ -114,7 +114,7 @@ jobs:
               export ECR=${ECR_URI}
 
               # Update template
-              envsubst < deployment.yml
+              envsubst < .circleci/files/deployment.yml
         - kubernetes/create-or-update-resource:
             resource-file-path: .circleci/files/deployment.yaml
             show-kubectl-command: true
@@ -141,7 +141,7 @@ workflows:
           create-repo: true
           dockerfile: Dockerfile
           path: ./app
-          repo: ECR_REPO
+          repo: uda-capstone-project
           tag: latest
       - deploy-service-in-eks:
           requires: [aws-ecr/build-and-push-image]
