@@ -90,7 +90,7 @@ jobs:
         - aws-eks/create-cluster:
             cluster-name: ${ENV_NAME}-cluster 
             aws-region: ${AWS_DEFAULT_REGION}
-            node-type: t3.medium
+            node-type: t2.micro
             nodes-min: 2
             nodes-max: 3
             ssh-public-key: DEFAULT_EKS_US_EAST_2_Key
@@ -107,22 +107,17 @@ jobs:
             name: Install envsubst
             command: pip install envsubst
         - run:
-            name: update and deploy template
-            command: |
-              aws eks update-kubeconfig --name ${ENV_NAME}-cluster --region ${AWS_DEFAULT_REGION}
-              
-              # Create fargate profile namespace
-              kubectl create namespace ${ENV_NAME}
-              
+            name: update deployment template
+            command: |            
+
               export ENV=${ENV_NAME}
               export ECR=${ECR_URI}
-
-              # Create deployment
-              envsubst < deployment.yml | kubectl apply -f -
-              kubectl get deployments -n ${ENV_NAME}
-
-              # Verify service
-              kubectl get svc uda-capstone-project -n ${ENV_NAME} 
+              
+              # Update template
+              envsubst < deployment.yml
+        - kubernetes/create-or-update-resource:
+            resource-file-path: .circleci/files/deployment.yaml
+            show-kubectl-command: true
             no_output_timeout: 60m
 workflows:
   deploy-application:
