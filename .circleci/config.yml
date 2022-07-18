@@ -1,8 +1,8 @@
-version: '2.1'
+version: 2.1
 
 orbs:
   aws-ecr: circleci/aws-ecr@7.0.0
-  aws-eks: circleci/aws-eks@<<pipeline.parameters.dev-orb-version>>
+  aws-eks: circleci/aws-eks@2.2.0
   kubernetes: circleci/kubernetes@1.3
 
 aws_docker_image: &aws_docker_image
@@ -94,7 +94,7 @@ jobs:
             nodes-max: 3
             ssh-public-key: DEFAULT_EKS_US_EAST_2_Key
 
-    deploy-service-in-eks:
+    prepare-eks-deployment:
       <<: *python_cluster_docker_image
       steps:
         - checkout
@@ -108,17 +108,6 @@ jobs:
             show-kubectl-command: true
         - run:
             name: check-deployment status before delete old deployment
-            command:  kubectl get svc uda-capstone-project
-        - aws-eks/update-container-image:
-            cluster-name: ${ENV_NAME}-cluster
-            container-image-updates: 'uda-capstone-project=uda-capstone-project:latest'
-            post-steps:
-              - kubernetes/delete-resource:
-                  resource-names: uda-capstone-project
-                  resource-types: deployment
-                  wait: true
-        - run:
-            name: check-deployment status after delete old deployment
             command:  kubectl get svc uda-capstone-project
 
 workflows:
@@ -146,8 +135,20 @@ workflows:
           path: ./app
           repo: uda-capstone-project
           tag: latest
-      - deploy-service-in-eks:
+      - prepare-eks-deployment:
           requires: [aws-ecr/build-and-push-image, deploy-aws-eks]
           filters:
             branches:
               only: [main]
+      - aws-eks/update-container-image:
+          requires: [prepare-eks-deployment]
+          filters:
+            branches:
+              only: [main]
+          cluster-name: ${ENV_NAME}-cluster
+          container-image-updates: 'uda-capstone-project=uda-capstone-project:latest'
+          post-steps:
+            - kubernetes/delete-resource:
+                resource-names: uda-capstone-project
+                resource-types: deployment
+                wait: true
