@@ -101,8 +101,7 @@ jobs:
             command: |
                 cat .circleci/files/deployment.yml.template |\
                 sed "s|IMAGE_TAG|${CIRCLE_WORKFLOW_ID:0:7}|\
-                g;s|ENV_NAME|${ENV_NAME}|g;s|ECR_URI|\
-                << ${ECR_URI} >>|g" > .circleci/files/deployment.yml
+                g;s|ENV_NAME|${ENV_NAME}|g;s|ECR_URI|${ECR_URI}|g" > .circleci/files/deployment.yml
         - aws-eks/update-kubeconfig-with-authenticator:
             cluster-name: ${ENV_NAME}-cluster
             install-kubectl: true
