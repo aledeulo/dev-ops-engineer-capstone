@@ -195,27 +195,7 @@ jobs:
               # Verify service
               kubectl get svc uda-capstone-project -n ${ENV_NAME}
 
-              # export POD_TO_DEPLOY=uda-capstone-project-${CIRCLE_WORKFLOW_ID:0:7}
-              
-              # # Assuming the Kubernetes cluster is ready
-              # kubectl get nodes
-
-              # # Deploy an App from the Dockerhub to the Kubernetes Cluster
-              # kubectl create deployment $POD_TO_DEPLOY --image=${ECR_URI}/uda-capstone-project:latest
-
-              # # See the status
-              # kubectl get deployments
-
-              # # Wait until pod is ready
-              # sleep 15m
-
-              # # See pods status
-              # kubectl get pods
-
-              # # Port forward
-              # export POD_NAME=$(kubectl get pods -o=name | grep $POD_TO_DEPLOY)
-              # echo 'Pod name found: ' $POD_NAME
-              kubectl port-forward $POD_NAME --address 0.0.0.0 8000:80
+              # kubectl port-forward $POD_NAME --address 0.0.0.0 8000:80
               echo ${CIRCLE_WORKFLOW_ID:0:7} >> OldDeploymentId.txt
             no_output_timeout: 60m
         - persist_to_workspace:

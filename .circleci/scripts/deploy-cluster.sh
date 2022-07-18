@@ -9,7 +9,7 @@ eksctl create cluster \
     --nodegroup-name $ENV_NAME-worker \
     --node-type t3.medium \
     --nodes 2 \
-    --nodes-min 1 \
+    --nodes-min 2 \
     --nodes-max 3 \
     --ssh-access \
     --node-volume-size 20 \

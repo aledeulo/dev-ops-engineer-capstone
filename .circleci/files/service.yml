@@ -3,10 +3,8 @@ kind: Service
 metadata:
   name: uda-capstone-project
   namespace: $ENV
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: external
-    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
-    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+  labels:
+    app: uda-capstone-project-$ENV
 spec:
   ports:
     - port: 80
@@ -14,4 +12,4 @@ spec:
       protocol: TCP
   type: LoadBalancer
   selector:
-    app: uda-capstone-project
+    app: uda-capstone-project-$ENV
