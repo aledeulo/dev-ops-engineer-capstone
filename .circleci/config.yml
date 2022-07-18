@@ -116,7 +116,7 @@ jobs:
               # Update template
               envsubst < .circleci/files/deployment.yml
         - kubernetes/create-or-update-resource:
-            resource-file-path: .circleci/files/deployment.yaml
+            resource-file-path: .circleci/files/deployment.yml
             show-kubectl-command: true
 workflows:
   deploy-application:
