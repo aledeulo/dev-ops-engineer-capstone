@@ -152,3 +152,4 @@ workflows:
                 resource-names: uda-capstone-project
                 resource-types: deployment
                 wait: true
+          resource-name: deployment/uda-capstone-project
