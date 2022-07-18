@@ -131,7 +131,7 @@ workflows:
             branches:
               only: [main, deploy-infrastructure]
       - aws-ecr/build-and-push-image:
-          requires: [build-test-lint, deploy-aws-eks]
+          requires: [build-test-lint]
           filters:
             branches:
               only: [main]
@@ -145,7 +145,7 @@ workflows:
           repo: uda-capstone-project
           tag: latest
       - deploy-service-in-eks:
-          requires: [aws-ecr/build-and-push-image]
+          requires: [aws-ecr/build-and-push-image, deploy-aws-eks]
           filters:
             branches:
               only: [main]

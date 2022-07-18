@@ -2,22 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: uda-capstone-project
-  namespace: $ENV
+  namespace: prod
   labels:
-    app: uda-capstone-project-$ENV
+    app: uda-capstone-project-prod
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: uda-capstone-project-$ENV
+      app: uda-capstone-project-prod
   template:
     metadata:
       labels:
-        app: uda-capstone-project-$ENV
+        app: uda-capstone-project-prod
     spec:
       containers:
         - name: uda-capstone-project
-          image: $ECR/uda-capstone-project:latest
+          image: 246528985509.dkr.ecr.us-east-2.amazonaws.com/uda-capstone-project:latest
           ports:
             - containerPort: 80
 
@@ -27,13 +27,13 @@ apiVersion: v1
 kind: Service
 metadata:
   name: uda-capstone-project
-  namespace: $ENV
+  namespace: prod
   labels:
-    app: uda-capstone-project-$ENV
+    app: uda-capstone-project-prod
 spec:
   type: LoadBalancer
   selector:
-    app: uda-capstone-project-$ENV
+    app: uda-capstone-project-prod
   ports:
     - port: 80
       targetPort: 80
