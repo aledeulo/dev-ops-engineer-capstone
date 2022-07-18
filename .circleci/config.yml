@@ -86,7 +86,7 @@ jobs:
             cluster-name: ${ENV_NAME}-cluster 
             aws-region: ${AWS_DEFAULT_REGION}
             nodegroup-name: ${ENV_NAME}-workers
-            node-type: t2.micro
+            node-type: t3.medium
             nodes-min: 2
             nodes-max: 3
             ssh-access: true
