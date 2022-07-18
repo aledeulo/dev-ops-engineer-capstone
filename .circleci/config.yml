@@ -145,7 +145,7 @@ jobs:
               done
               sleep 180
               echo "External IP: ${EXTERNAL_IP}"
-              curl -s --retry 10 "http://$EXTERNAL_IP" | grep "${CIRCLE_WORKFLOW_ID:0:7}"
+              curl -s --retry 10 "http://$EXTERNAL_IP/alive" | grep "Hello, World!"
 
 workflows:
   deploy-application:
