@@ -6,7 +6,7 @@ metadata:
   labels:
     app: uda-capstone-project-$ENV
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: uda-capstone-project-$ENV
@@ -31,5 +31,4 @@ spec:
           ports:
             - name: http
               containerPort: 80
-          nodeSelector:
-            kubernetes.io/os: linux
+              
