@@ -12,13 +12,13 @@ eksctl create cluster \
     --nodes 2 \
     --nodes-min 2 \
     --nodes-max 3 \
+    --ssh-access \
     --node-volume-size 20 \
-    --ssh-access \    
     --ssh-public-key DEFAULT_EKS_US_EAST_2_Key \
-    --managed \
-    --asg-access \
+    --appmesh-access \
     --external-dns-access \
     --full-ecr-access \
-    --appmesh-access \
     --alb-ingress-access \
+    --managed \
+    --asg-access \
     --verbose 3
