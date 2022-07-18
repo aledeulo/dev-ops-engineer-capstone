@@ -71,7 +71,6 @@ jobs:
       <<: *python_cluster_docker_image
       steps:
         - checkout
-        - install_aws_cli
         - run:
             name: check if the cluster exist
             command: |
@@ -99,32 +98,28 @@ jobs:
       <<: *python_cluster_docker_image
       steps:
         - checkout
-        - install_aws_cli
         - aws-eks/update-kubeconfig-with-authenticator:
             cluster-name: ${ENV_NAME}-cluster
             install-kubectl: true
-        - run:
-            name: Install envsubst
-            command: pip install envsubst python-gettext
-        - run:
-            name: update deployment template
-            command: |            
-
-              export ENV=${ENV_NAME}
-              export ECR=${ECR_URI}
-
-              # Update template
-              envsubst < .circleci/files/deployment.yml
-              cat .circleci/files/deployment.yml
-
-               # Create fargate profile namespace
-              kubectl create namespace ${ENV_NAME}
         - kubernetes/create-or-update-resource:
+            get-rollout-status: true
             resource-file-path: .circleci/files/deployment.yml
+            resource-name: deployment/uda-capstone-project
             show-kubectl-command: true
         - run:
-            name: check-deployment
-            command:  kubectl get svc uda-capstone-project -n ${ENV_NAME}
+            name: check-deployment status before delete old deployment
+            command:  kubectl get svc uda-capstone-project
+        - aws-eks/update-container-image:
+            cluster-name: ${ENV_NAME}-cluster
+            container-image-updates: 'uda-capstone-project=uda-capstone-project:latest'
+            post-steps:
+              - kubernetes/delete-resource:
+                  resource-names: uda-capstone-project
+                  resource-types: deployment
+                  wait: true
+        - run:
+            name: check-deployment status after delete old deployment
+            command:  kubectl get svc uda-capstone-project
 
 workflows:
   deploy-application:
