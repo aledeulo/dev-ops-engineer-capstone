@@ -225,7 +225,7 @@ workflows:
           create-repo: true
           dockerfile: Dockerfile
           path: ./app
-          repo: uda-capstone-project
+          repo: ${ECR_REPO}
           tag: latest
       - deploy-service-in-eks:
           requires: [aws-ecr/build-and-push-image]
