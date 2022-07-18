@@ -184,24 +184,17 @@ jobs:
 
               # Create deployment
               envsubst < deployment.yml | kubectl apply -f -
-              kubectl get deployments
-
-              # Wait until pod is ready
-              sleep 5m
+              kubectl get deployments -n ${ENV_NAME}
               
               # Deploy service
               envsubst < service.yml | kubectl apply -f -
 
               # Verify service
-              kubectl get svc uda-capstone-project -n ${ENV_NAME}
+              kubectl get svc uda-capstone-project -n ${ENV_NAME} 
 
               # kubectl port-forward $POD_NAME --address 0.0.0.0 8000:80
-              echo ${CIRCLE_WORKFLOW_ID:0:7} >> OldDeploymentId.txt
+              # echo ${CIRCLE_WORKFLOW_ID:0:7} >> .circleci/OldDeploymentId.txt
             no_output_timeout: 60m
-        - persist_to_workspace:
-            root: ~/
-            paths:
-              - project/OldDeploymentId.txt
 workflows:
   deploy-application:
     jobs:
@@ -225,7 +218,7 @@ workflows:
           create-repo: true
           dockerfile: Dockerfile
           path: ./app
-          repo: ${ECR_REPO}
+          repo: ECR_REPO
           tag: latest
       - deploy-service-in-eks:
           requires: [aws-ecr/build-and-push-image]

@@ -15,20 +15,9 @@ spec:
       labels:
         app: uda-capstone-project-$ENV
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/arch
-                operator: In
-                values:
-                - amd64
-                - arm64
       containers:
         - name: uda-capstone-project
           image: $ECR/uda-capstone-project:latest
           ports:
-            - name: http
-              containerPort: 80
+            - containerPort: 80
               
