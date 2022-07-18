@@ -23,11 +23,7 @@ commands:
     steps:
       - run:
           name: install aws cli
-          command: |
-            pip install awscli
-            aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}
-            aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
-            aws configure set region ${AWS_DEFAULT_REGION}   
+          command: pip install awscli  
 
 jobs:
 
@@ -93,12 +89,20 @@ jobs:
             node-type: t2.micro
             nodes-min: 2
             nodes-max: 3
+            ssh-access: true
             ssh-public-key: DEFAULT_EKS_US_EAST_2_Key
 
     prepare-eks-deployment:
       <<: *python_cluster_docker_image
       steps:
         - checkout
+        - run:
+            name: Create deployment manifest
+            command: |
+                cat .circleci/files/deployment.yml.template |\
+                sed "s|IMAGE_TAG|${CIRCLE_WORKFLOW_ID:0:7}|\
+                g;s|ENV_NAME|${ENV_NAME}|g;s|ECR_URI|\
+                << ${ECR_URI} >>|g" > .circleci/files/deployment.yml
         - aws-eks/update-kubeconfig-with-authenticator:
             cluster-name: ${ENV_NAME}-cluster
             install-kubectl: true
@@ -135,7 +139,7 @@ workflows:
           dockerfile: Dockerfile
           path: ./app
           repo: uda-capstone-project
-          tag: latest
+          tag: ${CIRCLE_WORKFLOW_ID:0:7}
       - prepare-eks-deployment:
           requires: [aws-ecr/build-and-push-image, deploy-aws-eks]
           filters:
@@ -147,7 +151,7 @@ workflows:
             branches:
               only: [main]
           cluster-name: ${ENV_NAME}-cluster
-          container-image-updates: 'uda-capstone-project=uda-capstone-project:latest'
+          container-image-updates: 'uda-capstone-project=uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7}'
           post-steps:
             - kubernetes/delete-resource:
                 resource-names: uda-capstone-project
