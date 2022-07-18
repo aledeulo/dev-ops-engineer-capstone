@@ -115,10 +115,8 @@ jobs:
             resource-file-path: ".circleci/files/deployment.yml"
             resource-name: deployment/uda-capstone-project
             show-kubectl-command: true
-            no-output-timeout: 60m
         - kubernetes/create-or-update-resource:
             resource-file-path: ".circleci/files/service.yml"
-            no-output-timeout: 60m
         - run:
             name: get deployment status
             command:  kubectl get svc uda-capstone-project
