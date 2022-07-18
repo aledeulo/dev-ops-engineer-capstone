@@ -110,7 +110,7 @@ jobs:
 
               cd .circleci/scripts
               chmod +x deploy-cluster.sh
-              ./deploy-cluster.sh ${ENV_NAME}
+              ./deploy-cluster.sh ${ENV_NAME} ${AWS_DEFAULT_REGION}
             no_output_timeout: 60m
         - run:
             name: install openSSL
@@ -123,7 +123,7 @@ jobs:
               ./get_helm.sh
         - run: 
             name: create IAM OIDC
-            command: eksctl utils associate-iam-oidc-provider --region us-east-1 --cluster ${ENV_NAME}-cluster --approve
+            command: eksctl utils associate-iam-oidc-provider --region ${AWS_DEFAULT_REGION} --cluster ${ENV_NAME}-cluster --approve
         - run:
             name: create load balancer policy
             command: |           
@@ -135,9 +135,9 @@ jobs:
             command: |
               cd .circleci/scripts
               chmod +x deploy-alb.sh
-              export VPC=$(aws ec2 describe-vpcs --region us-east-1 --filters "Name=tag-value,Values=eksctl-${ENV_NAME}-cluster-cluster/VPC" --query 'Vpcs[*].VpcId' --output text)
+              export VPC=$(aws ec2 describe-vpcs --region ${AWS_DEFAULT_REGION} --filters "Name=tag-value,Values=eksctl-${ENV_NAME}-cluster-cluster/VPC" --query 'Vpcs[*].VpcId' --output text)
               
-              ./deploy-alb.sh ${ENV_NAME} ${AWS_ACCOUNT} $VPC
+              ./deploy-alb.sh ${ENV_NAME} ${AWS_ACCOUNT} $VPC ${AWS_DEFAULT_REGION}
         - run:
             name: create fargarte profile
             command: |
@@ -172,7 +172,7 @@ jobs:
         - run:
             name: deploy pods
             command: |
-              aws eks update-kubeconfig --name ${ENV_NAME}-cluster --region us-east-1
+              aws eks update-kubeconfig --name ${ENV_NAME}-cluster --region ${AWS_DEFAULT_REGION}
               
               # Create fargate profile namespace
               kubectl create namespace ${ENV_NAME}

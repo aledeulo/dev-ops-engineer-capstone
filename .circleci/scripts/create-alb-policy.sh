@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
-export ENV_NAME=$1
-export ROLE_NAME=$2
-export AWS_ACCOUNT=$3
+ENV_NAME=$1
+ROLE_NAME=$2
+AWS_ACCOUNT=$3
+REGION=$4
 
 #Configure the cluster
-aws eks update-kubeconfig --name $ENV_NAME-cluster --region us-east-1
+aws eks update-kubeconfig --name $ENV_NAME-cluster --region $REGION
 
 curl -o iam_policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.2/docs/install/iam_policy.json
 # Create a policy
