@@ -99,6 +99,7 @@ jobs:
       <<: *python_cluster_docker_image
       steps:
         - checkout
+        - install_aws_cli
         - aws-eks/update-kubeconfig-with-authenticator:
             cluster-name: ${ENV_NAME}-cluster
             install-kubectl: true
