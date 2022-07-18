@@ -105,7 +105,7 @@ jobs:
             install-kubectl: true
         - run:
             name: Install envsubst
-            command: pip install envsubst
+            command: pip install envsubst python-gettext
         - run:
             name: update deployment template
             command: |            
@@ -131,7 +131,7 @@ workflows:
             branches:
               only: [main, deploy-infrastructure]
       - aws-ecr/build-and-push-image:
-          requires: [deploy-aws-eks]
+          requires: [build-test-lint, deploy-aws-eks]
           filters:
             branches:
               only: [main]
