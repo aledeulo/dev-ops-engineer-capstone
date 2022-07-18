@@ -116,9 +116,16 @@ jobs:
               # Update template
               envsubst < .circleci/files/deployment.yml
               cat .circleci/files/deployment.yml
+
+               # Create fargate profile namespace
+              kubectl create namespace ${ENV_NAME}
         - kubernetes/create-or-update-resource:
             resource-file-path: .circleci/files/deployment.yml
             show-kubectl-command: true
+        - run:
+            name: check-deployment
+            command:  kubectl get svc uda-capstone-project -n ${ENV_NAME}
+
 workflows:
   deploy-application:
     jobs:
