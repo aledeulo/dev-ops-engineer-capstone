@@ -150,10 +150,7 @@ jobs:
 workflows:
   deploy-application:
     jobs:
-      - build-test-lint:
-          filters:
-            branches:
-              only: [main]
+      - build-test-lint
       - deploy-aws-eks:
           filters:
             branches:

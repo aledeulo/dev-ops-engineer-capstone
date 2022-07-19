@@ -1,4 +1,4 @@
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/aledeulo/project-ml-microservice-kubernetes/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/aledeulo/project-ml-microservice-kubernetes/tree/master)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/aledeulo/dev-ops-engineer-capstone/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/aledeulo/dev-ops-engineer-capstone/tree/main)
 
 ## Project Overview
 This is a simple Hello World application which is going to be deployed on AWS EKS by using circleci to manage the CI/CD process.
