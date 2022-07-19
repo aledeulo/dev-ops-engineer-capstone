@@ -62,6 +62,25 @@ jobs:
               cd ./app
               source .devops/bin/activate
               make lint
+
+    build-and-push-image:
+      docker:
+        - image: 'cimg/python:3.10'
+          user: root
+      steps:
+        - checkout
+        - aws_cli_credentials
+        - setup_remote_docker:
+            version: 20.10.14
+            docker_layer_caching: false
+        - run:
+            name: run build docker and push to ecr
+            command: |
+              cd ./app
+              docker build . -t uda-capstone-project:${CIRCLE_WORKFLOW_ID:0:7}
+              aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin "${ECR_URI}"
+              docker tag uda-capstone-project ${ECR_URI}/${ECR_REPO}:${CIRCLE_WORKFLOW_ID:0:7}
+              docker push ${ECR_URI}/${ECR_REPO}:${CIRCLE_WORKFLOW_ID:0:7}
   
     deploy-aws-eks:
       <<: *python_cluster_docker_image
@@ -155,20 +174,11 @@ workflows:
           filters:
             branches:
               only: [main, deploy-infrastructure]
-      - aws-ecr/build-and-push-image:
+      - build-and-push-image:
           requires: [build-test-lint]
           filters:
             branches:
               only: [main]
-          account-url: ECR_URI
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          region: AWS_DEFAULT_REGION
-          create-repo: true
-          dockerfile: Dockerfile
-          path: ./app
-          repo: uda-capstone-project
-          tag: ${CIRCLE_WORKFLOW_ID:0:7}
       - deploy-app-in-eks:
           requires: [aws-ecr/build-and-push-image, deploy-aws-eks]
           filters:

@@ -6,8 +6,6 @@ WORKDIR /app
 ## Step 2:
 COPY requirements.txt /app/
 
-Addsomething to breake the linter
-
 ## Step 3:
 #hadolint ignore=DL3013
 RUN pip install --upgrade --no-cache-dir pip &&\
