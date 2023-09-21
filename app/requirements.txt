@@ -3,3 +3,4 @@ pylint
 locust==2.10.1
 pytest
 pytest-cov
+gevent>=23.9.0 # not directly required, pinned by Snyk to avoid a vulnerability
